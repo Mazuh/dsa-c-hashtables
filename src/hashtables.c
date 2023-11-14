@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 /**
- * @brief Calculate hash value of a raw string using djb2 algorithm.
+ * @brief Internal calc hash value of a raw string using djb2 algorithm.
  *
  * @see https://theartincode.stanis.me/008-djb2/
  */
@@ -90,14 +90,8 @@ void hashstrset_add(HashStrSet *set, char *value)
             return;
         }
 
-        bool is_hash_collision = set->buckets[i].hash == hashed;
-        if (!is_hash_collision)
-        {
-            continue;
-        }
-
-        bool is_same_value = strcmp(set->buckets[i].value, value) == 0;
-        if (is_same_value)
+        bool is_already_containing = set->buckets[i].hash == hashed && strcmp(set->buckets[i].value, value) == 0;
+        if (is_already_containing)
         {
             return;
         }
@@ -193,6 +187,8 @@ int main()
     hashstrset_remove(weekdays, "Saturday");
 
     // try to add a duplicated value to set
+    hashstrset_add(weekdays, "Monday");
+    hashstrset_add(weekdays, "Monday");
     hashstrset_add(weekdays, "Monday");
 
     // print set values
