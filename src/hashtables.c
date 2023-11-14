@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -74,7 +75,7 @@ void hashstrset_add(HashStrSet *set, char *value)
 
     for (size_t i = initial_index_attempt; i < set->length; i++)
     {
-        char is_empty_bucket = set->buckets[i].hash == 0;
+        bool is_empty_bucket = set->buckets[i].hash == 0;
         if (is_empty_bucket)
         {
             set->buckets[i].hash = hashed;
@@ -82,33 +83,46 @@ void hashstrset_add(HashStrSet *set, char *value)
             return;
         }
 
-        char is_hash_collision = set->buckets[i].hash == hashed;
-        char is_same_value = strcmp(set->buckets[i].value, value) == 0;
-        if (is_hash_collision && !is_same_value)
+        bool is_hash_collision = set->buckets[i].hash == hashed;
+        if (!is_hash_collision)
         {
-            fprintf(stderr, "HashStrSet: Unexpected hash collision when adding '%s'.\n", value);
-            exit(1); // awful, but somewhat expected to happen in a toy project like this
+            continue;
+        }
+
+        bool is_same_value = strcmp(set->buckets[i].value, value) == 0;
+        if (is_same_value)
+        {
             return;
         }
+
+        fprintf(stderr, "HashStrSet: Unexpected hash collision when adding '%s'.\n", value);
+        exit(1); // awful, but somewhat expected to happen in a toy project like this
     }
 }
 
 void hashstrset_debug(HashStrSet *set)
 {
-    printf("HashStrSet (having %lu buckets):\n", set->length);
+    printf("--------- HashStrSet -----------\n");
+    printf("It has %lu buckets:\n", set->length);
     for (size_t i = 0; i < set->length; i++)
     {
         printf(set->buckets[i].value == NULL ? "." : "*");
     }
 
     printf("\n");
+    size_t count = 0;
     for (size_t i = 0; i < set->length; i++)
     {
-        if (set->buckets[i].value != NULL)
+        if (set->buckets[i].hash != 0)
         {
             printf("%lu -> %s\n", set->buckets[i].hash, set->buckets[i].value);
+            count++;
         }
     }
+
+    printf("It has %lu values.\n", count);
+
+    printf("-------------------------\n");
 }
 
 /**
@@ -129,7 +143,10 @@ int main()
 
     // TODO: remove a value from set
 
-    // TODO: try to add a duplicated value to set
+    // try to add a duplicated value to set
+    hashstrset_add(weekdays, "Monday");
+    hashstrset_add(weekdays, "Monday");
+    hashstrset_add(weekdays, "Monday");
 
     // print set values
     hashstrset_debug(weekdays);
