@@ -169,7 +169,7 @@ bool hashstrset_remove(HashStrSet *set, char *value)
  * considering n as the total amount of buckets in the internal hash table, so it's always
  * more than the amount of filled buckets.
  *
- * @return HashStrSetValuesIterator*
+ * @return HashStrSetValuesIterator instance, empty, ready to seek the set elements until its end.
  */
 HashStrSetValuesIterator *hashstrset_values_iterator()
 {
@@ -243,7 +243,7 @@ int main()
     hashstrset_add(weekdays_set, "Monday");
 
     // print set values
-    printf("There are %lu weeek days:\n", hashstrset_size(weekdays_set));
+    printf("There are %lu weekdays:\n", hashstrset_size(weekdays_set));
 
     HashStrSetValuesIterator *iterator = hashstrset_values_iterator();
     while (hashstrset_values_iterator_seek(weekdays_set, iterator))
