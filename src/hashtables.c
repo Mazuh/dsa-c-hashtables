@@ -5,6 +5,7 @@
 
 /**
  * @brief Calculate hash value of a raw string using djb2 algorithm.
+ *
  * @see https://theartincode.stanis.me/008-djb2/
  */
 unsigned long hash_str_djb2(char *raw_string)
@@ -30,20 +31,24 @@ struct HashTableStrBucket
 } typedef HashTableStrBucket;
 
 /**
- * @brief Opaque data structure of a hash table to store string elements.
+ * @brief Opaque. It implements the set abstract data structure, backed by a hash table of strings.
  */
 struct HashStrSet
 {
+    size_t cardinality;
     size_t length;
     HashTableStrBucket buckets[];
 } typedef HashStrSet;
 
 /**
  * @brief HashStrSet constructor.
+ *
+ * @return HashStrSet instance, empty.
  */
 HashStrSet *hashstrset_init()
 {
     HashStrSet *set = malloc(sizeof(HashStrSet));
+    set->cardinality = 0;
     set->length = 101; // convenient prime number
     for (size_t i = 0; i < set->length; i++)
     {
@@ -55,7 +60,8 @@ HashStrSet *hashstrset_init()
 
 /**
  * @brief HashStrSet destructor.
- * @param hashstrset HashStrSet to be released from memory.
+ *
+ * @param set HashStrSet to be freed from memory.
  */
 void hashstrset_free(HashStrSet *set)
 {
@@ -63,7 +69,7 @@ void hashstrset_free(HashStrSet *set)
 }
 
 /**
- * @brief Insert a string value into a HashStrSet.
+ * @brief Adds the specified string to this set if it is not already present.
  *
  * @param set HashStrSet instance.
  * @param value String to be added to the set.
@@ -80,6 +86,7 @@ void hashstrset_add(HashStrSet *set, char *value)
         {
             set->buckets[i].hash = hashed;
             set->buckets[i].value = value;
+            set->cardinality++;
             return;
         }
 
@@ -100,6 +107,22 @@ void hashstrset_add(HashStrSet *set, char *value)
     }
 }
 
+/**
+ * @brief Set cardinality.
+ *
+ * @param set HashStrSet instance.
+ * @return size_t Number of elements in this set.
+ */
+size_t hashstrset_size(HashStrSet *set)
+{
+    return set->cardinality;
+}
+
+/**
+ * @brief Print useful info about the given HashStrSet.
+ *
+ * @param set HashStrSet instance.
+ */
 void hashstrset_debug(HashStrSet *set)
 {
     printf("--------- HashStrSet -----------\n");
@@ -110,17 +133,16 @@ void hashstrset_debug(HashStrSet *set)
     }
 
     printf("\n");
-    size_t count = 0;
+
     for (size_t i = 0; i < set->length; i++)
     {
         if (set->buckets[i].hash != 0)
         {
             printf("%lu -> %s\n", set->buckets[i].hash, set->buckets[i].value);
-            count++;
         }
     }
 
-    printf("It has %lu values.\n", count);
+    printf("It has %lu values.\n", hashstrset_size(set));
 
     printf("-------------------------\n");
 }
