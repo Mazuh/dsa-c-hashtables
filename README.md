@@ -1,8 +1,9 @@
-# Data Structures & Algorithms: (C) Hash Tables
+# Data Structures & Algorithms: [C] Hash Tables
 
-Implementation of the hash table and derived structures,
-inspired by a talk of [Luciano Ramalho](https://www.linkedin.com/in/lucianoramalho/) during
-[PyBR2023](https://2023.pythonbrasil.org.br/).
+Implementation of a hash table and related structures
+like [set](<https://en.wikipedia.org/wiki/Set_(abstract_data_type)>),
+inspired by a talk of [Luciano Ramalho](https://www.linkedin.com/in/lucianoramalho/)
+during [PyBR2023](https://2023.pythonbrasil.org.br/).
 
 ## Setting up
 
