@@ -22,7 +22,7 @@ unsigned long hash_str_djb2(char *raw_string)
     }
 
     return hash_value;
-};
+}
 
 /**
  * @brief Internal data structure, each bucket is a row in the hash table powering the HashStrSet.

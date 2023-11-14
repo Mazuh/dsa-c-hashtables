@@ -7,8 +7,9 @@ SRC= $(SRC_FOLDER)/$(SRC_MAIN)
 
 BIN_FOLDER = ./build
 BIN = $(BIN_FOLDER)/hashtables.bin
+DEBUG_BIN = $(BIN_FOLDER)/hashtables-debug.bin
 
-.PHONY=default build run clean
+.PHONY=default build run clean valgrind
 
 default: clean run
 
@@ -21,3 +22,8 @@ run: build
 
 clean:
 	rm -rf $(BIN_FOLDER)
+
+valgrind:
+	mkdir -p $(BIN_FOLDER)
+	gcc $(SRC) -Wall -pedantic -g -ggdb -O0 -std=c18 -o $(DEBUG_BIN)
+	valgrind $(DEBUG_BIN)
