@@ -4,6 +4,9 @@ Implementation of the hash table and derived structures,
 inspired by the talk of
 [Luciano Ramalho in PyBR2023](https://youtu.be/JfyB2YGRuDw?list=PLDC3uVLxaEQ1Bkj73iMqDTd8uDzTfjyzu&t=891).
 
+The API for the set data structure is somewhat similar
+to [Java HashSet](https://docs.oracle.com/javase/8/docs/api/java/util/HashSet.html).
+
 ## Setting up
 
 ```sh

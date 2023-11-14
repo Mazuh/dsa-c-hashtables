@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 
 /**
@@ -18,30 +20,122 @@ unsigned long hash_str_djb2(char *raw_string)
 };
 
 /**
+ * @brief Internal data structure, each bucket is a row in the hash table powering the HashStrSet.
+ */
+struct HashTableStrBucket
+{
+    unsigned long hash;
+    char *value;
+} typedef HashTableStrBucket;
+
+/**
+ * @brief Opaque data structure of a hash table to store string elements.
+ */
+struct HashStrSet
+{
+    size_t length;
+    HashTableStrBucket buckets[];
+} typedef HashStrSet;
+
+/**
+ * @brief HashStrSet constructor.
+ */
+HashStrSet *hashstrset_init()
+{
+    HashStrSet *set = malloc(sizeof(HashStrSet));
+    set->length = 101; // convenient prime number
+    for (size_t i = 0; i < set->length; i++)
+    {
+        set->buckets[i].hash = 0;
+        set->buckets[i].value = NULL;
+    }
+    return set;
+}
+
+/**
+ * @brief HashStrSet destructor.
+ * @param hashstrset HashStrSet to be released from memory.
+ */
+void hashstrset_free(HashStrSet *set)
+{
+    free(set);
+}
+
+/**
+ * @brief Insert a string value into a HashStrSet.
+ *
+ * @param set HashStrSet instance.
+ * @param value String to be added to the set.
+ */
+void hashstrset_add(HashStrSet *set, char *value)
+{
+    unsigned long hashed = hash_str_djb2(value);
+    unsigned long initial_index_attempt = hashed % set->length;
+
+    for (size_t i = initial_index_attempt; i < set->length; i++)
+    {
+        char is_empty_bucket = set->buckets[i].hash == 0;
+        if (is_empty_bucket)
+        {
+            set->buckets[i].hash = hashed;
+            set->buckets[i].value = value;
+            return;
+        }
+
+        char is_hash_collision = set->buckets[i].hash == hashed;
+        char is_same_value = strcmp(set->buckets[i].value, value) == 0;
+        if (is_hash_collision && !is_same_value)
+        {
+            fprintf(stderr, "HashStrSet: Unexpected hash collision when adding '%s'.\n", value);
+            exit(1); // awful, but somewhat expected to happen in a toy project like this
+            return;
+        }
+    }
+}
+
+void hashstrset_debug(HashStrSet *set)
+{
+    printf("HashStrSet (having %lu buckets):\n", set->length);
+    for (size_t i = 0; i < set->length; i++)
+    {
+        printf(set->buckets[i].value == NULL ? "." : "*");
+    }
+
+    printf("\n");
+    for (size_t i = 0; i < set->length; i++)
+    {
+        if (set->buckets[i].value != NULL)
+        {
+            printf("%lu -> %s\n", set->buckets[i].hash, set->buckets[i].value);
+        }
+    }
+}
+
+/**
  * @brief Experimental execution.
  */
 int main()
 {
-    // TODO: hash of some given values
-    char *str_0 = "";
-    char *str_1 = "Hello, world!";
-    char *str_2 = "Mazuh";
+    // create set
+    HashStrSet *weekdays = hashstrset_init();
 
-    printf("Hash of '%s': %lu\n", str_0, hash_str_djb2(str_0));
-    printf("Hash of '%s': %lu\n", str_1, hash_str_djb2(str_1));
-    printf("Hash of '%s': %lu\n", str_1, hash_str_djb2(str_1));
-    printf("Hash of '%s': %lu\n", str_2, hash_str_djb2(str_2));
-
-    // TODO: create set
-
-    // TODO: add some values to set
+    // add some values to set
+    hashstrset_add(weekdays, "Monday");
+    hashstrset_add(weekdays, "Tuesday");
+    hashstrset_add(weekdays, "Wednesday");
+    hashstrset_add(weekdays, "Thursday");
+    hashstrset_add(weekdays, "Friday");
+    hashstrset_add(weekdays, "Saturday");
 
     // TODO: remove a value from set
 
     // TODO: try to add a duplicated value to set
 
-    // TODO: print set values
+    // print set values
+    hashstrset_debug(weekdays);
 
-    printf("Hello, World!\n");
+    // bye
+    hashstrset_free(weekdays);
+
     return 0;
 }
