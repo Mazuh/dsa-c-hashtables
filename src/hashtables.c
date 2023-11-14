@@ -44,6 +44,15 @@ struct HashStrSet
 } typedef HashStrSet;
 
 /**
+ * @brief Helper to iterate over the unique values of a set.
+ */
+struct HashStrSetValuesIterator
+{
+    char *current_value;
+    size_t _current_index;
+} typedef HashStrSetValuesIterator;
+
+/**
  * @brief HashStrSet constructor.
  *
  * @return HashStrSet instance, empty.
@@ -154,32 +163,59 @@ bool hashstrset_remove(HashStrSet *set, char *value)
 }
 
 /**
- * @brief Print useful info about the given HashStrSet.
+ * @brief Makes a helper to iterate over the unique values of a set.
+ *
+ * Keep in mind that seeking all elements is O(n) operation, even if the set is empty,
+ * considering n as the total amount of buckets in the internal hash table, so it's always
+ * more than the amount of filled buckets.
+ *
+ * @return HashStrSetValuesIterator*
+ */
+HashStrSetValuesIterator *hashstrset_values_iterator()
+{
+    HashStrSetValuesIterator *iterator = malloc(sizeof(HashStrSetValuesIterator));
+    iterator->current_value = NULL;
+    iterator->_current_index = 0;
+    return iterator;
+}
+
+/**
+ * @brief HashStrSetValuesIterator destructor.
+ *
+ * @param iterator HashStrSetValuesIterator instance.
+ */
+void hashstrset_values_iterator_free(HashStrSetValuesIterator *iterator)
+{
+    free(iterator);
+}
+
+/**
+ * @brief Seeks the next value in the set and assign it to `iterator->current_value`.
+ *
+ * Remember the warning at `hashstrset_values_iterator` documentation.
  *
  * @param set HashStrSet instance.
+ * @param iterator HashStrSetValuesIterator instance.
+ * @return true if it managed to seek a next value, otherwise false (it reached the end).
  */
-void hashstrset_debug(HashStrSet *set)
+bool hashstrset_values_iterator_seek(HashStrSet *set, HashStrSetValuesIterator *iterator)
 {
-    printf("--------- HashStrSet -----------\n");
-    printf("It has %lu buckets:\n", set->buckets_qtt);
-    for (size_t i = 0; i < set->buckets_qtt; i++)
+    bool is_first_iteration = iterator->current_value == NULL;
+    size_t begin_index = is_first_iteration ? 0 : iterator->_current_index + 1;
+    for (size_t i = begin_index; i < set->buckets_qtt; i++)
     {
-        printf(set->buckets[i].value == NULL ? "." : "*");
-    }
-
-    printf("\n");
-
-    for (size_t i = 0; i < set->buckets_qtt; i++)
-    {
-        if (set->buckets[i].hash != 0)
+        bool has_found_filled = set->buckets[i].hash != 0;
+        if (has_found_filled)
         {
-            printf("%lu -> %s\n", set->buckets[i].hash, set->buckets[i].value);
+            iterator->current_value = set->buckets[i].value;
+            iterator->_current_index = i;
+            return true;
         }
     }
 
-    printf("It has %lu values.\n", hashstrset_size(set));
-
-    printf("-------------------------\n");
+    iterator->current_value = NULL;
+    iterator->_current_index = 0;
+    return false;
 }
 
 /**
@@ -188,29 +224,36 @@ void hashstrset_debug(HashStrSet *set)
 int main()
 {
     // create set
-    HashStrSet *weekdays = hashstrset_init();
+    HashStrSet *weekdays_set = hashstrset_init();
 
     // add some values to set
-    hashstrset_add(weekdays, "Monday");
-    hashstrset_add(weekdays, "Tuesday");
-    hashstrset_add(weekdays, "Wednesday");
-    hashstrset_add(weekdays, "Thursday");
-    hashstrset_add(weekdays, "Friday");
-    hashstrset_add(weekdays, "Saturday");
+    hashstrset_add(weekdays_set, "Monday");
+    hashstrset_add(weekdays_set, "Tuesday");
+    hashstrset_add(weekdays_set, "Wednesday");
+    hashstrset_add(weekdays_set, "Thursday");
+    hashstrset_add(weekdays_set, "Friday");
+    hashstrset_add(weekdays_set, "Saturday");
 
     // remove a value from set
-    hashstrset_remove(weekdays, "Saturday");
+    hashstrset_remove(weekdays_set, "Saturday");
 
     // try to add a duplicated value to set
-    hashstrset_add(weekdays, "Monday");
-    hashstrset_add(weekdays, "Monday");
-    hashstrset_add(weekdays, "Monday");
+    hashstrset_add(weekdays_set, "Monday");
+    hashstrset_add(weekdays_set, "Monday");
+    hashstrset_add(weekdays_set, "Monday");
 
     // print set values
-    hashstrset_debug(weekdays);
+    printf("There are %lu weeek days:\n", hashstrset_size(weekdays_set));
+
+    HashStrSetValuesIterator *iterator = hashstrset_values_iterator();
+    while (hashstrset_values_iterator_seek(weekdays_set, iterator))
+    {
+        printf("- %s\n", iterator->current_value);
+    }
+    hashstrset_values_iterator_free(iterator);
 
     // bye
-    hashstrset_free(weekdays);
+    hashstrset_free(weekdays_set);
 
     return 0;
 }
