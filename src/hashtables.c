@@ -103,8 +103,34 @@ void hashstrset_add(HashStrSet *set, char *value)
         }
 
         fprintf(stderr, "HashStrSet: Unexpected hash collision when adding '%s'.\n", value);
-        exit(1); // awful, but somewhat expected to happen in a toy project like this
+        exit(1);
     }
+}
+
+/**
+ * @brief Removes the specified element from this set if it is present.
+ *
+ * @param set HashStrSet instance.
+ * @param value String to be removed from the set.
+ * @return true (1) if it worked, otherwise false (0).
+ */
+bool hashstrset_remove(HashStrSet *set, char *value)
+{
+    unsigned long hashed = hash_str_djb2(value);
+    unsigned long initial_index_attempt = hashed % set->length;
+
+    for (size_t i = initial_index_attempt; i < set->length; i++)
+    {
+        if (set->buckets[i].hash == hashed && strcmp(set->buckets[i].value, value) == 0)
+        {
+            set->buckets[i].hash = 0;
+            set->buckets[i].value = NULL;
+            set->cardinality--;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /**
@@ -163,11 +189,10 @@ int main()
     hashstrset_add(weekdays, "Friday");
     hashstrset_add(weekdays, "Saturday");
 
-    // TODO: remove a value from set
+    // remove a value from set
+    hashstrset_remove(weekdays, "Saturday");
 
     // try to add a duplicated value to set
-    hashstrset_add(weekdays, "Monday");
-    hashstrset_add(weekdays, "Monday");
     hashstrset_add(weekdays, "Monday");
 
     // print set values
