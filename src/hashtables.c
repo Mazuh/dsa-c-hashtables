@@ -78,8 +78,15 @@ HashStrSet *hashstrset_init()
  */
 void hashstrset_free(HashStrSet *set)
 {
-    free(set->buckets);
-    free(set);
+    if (set && set->buckets)
+    {
+        free(set->buckets);
+    }
+
+    if (set)
+    {
+        free(set);
+    }
 }
 
 /**
@@ -188,7 +195,11 @@ HashStrSetValuesIterator *hashstrset_values_iterator()
  */
 void hashstrset_values_iterator_free(HashStrSetValuesIterator *iterator)
 {
-    free(iterator);
+    if (iterator)
+    {
+
+        free(iterator);
+    }
 }
 
 /**
