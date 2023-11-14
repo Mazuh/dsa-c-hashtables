@@ -1,3 +1,6 @@
+/**
+ * @brief Studying hash table data structures. They're not thread-safe and not production-ready.
+ */
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
@@ -36,7 +39,7 @@ struct HashTableStrBucket
 struct HashStrSet
 {
     size_t cardinality;
-    size_t length;
+    size_t buckets_qtt;
     HashTableStrBucket buckets[];
 } typedef HashStrSet;
 
@@ -49,8 +52,8 @@ HashStrSet *hashstrset_init()
 {
     HashStrSet *set = malloc(sizeof(HashStrSet));
     set->cardinality = 0;
-    set->length = 101; // convenient prime number
-    for (size_t i = 0; i < set->length; i++)
+    set->buckets_qtt = 101; // convenient and arbitrary prime number
+    for (size_t i = 0; i < set->buckets_qtt; i++)
     {
         set->buckets[i].hash = 0;
         set->buckets[i].value = NULL;
@@ -69,6 +72,17 @@ void hashstrset_free(HashStrSet *set)
 }
 
 /**
+ * @brief Set cardinality.
+ *
+ * @param set HashStrSet instance.
+ * @return size_t Number of elements in this set.
+ */
+size_t hashstrset_size(HashStrSet *set)
+{
+    return set->cardinality;
+}
+
+/**
  * @brief Adds the specified string to this set if it is not already present.
  *
  * @param set HashStrSet instance.
@@ -76,10 +90,23 @@ void hashstrset_free(HashStrSet *set)
  */
 void hashstrset_add(HashStrSet *set, char *value)
 {
-    unsigned long hashed = hash_str_djb2(value);
-    unsigned long initial_index_attempt = hashed % set->length;
+    bool has_to_scale = set->cardinality >= set->buckets_qtt / 2; // arbitrary load threshold
+    if (has_to_scale)
+    {
+        size_t scaled_buckets_qtt = set->buckets_qtt * 2; // arbitrary scaling factor
 
-    for (size_t i = initial_index_attempt; i < set->length; i++)
+        for (size_t i = set->buckets_qtt; i < scaled_buckets_qtt; i++)
+        {
+            set->buckets[i].hash = 0;
+            set->buckets[i].value = NULL;
+        }
+
+        set->buckets_qtt = scaled_buckets_qtt;
+    }
+
+    unsigned long hashed = hash_str_djb2(value);
+    unsigned long attempt_begin = hashed % set->buckets_qtt;
+    for (size_t i = attempt_begin; i < set->buckets_qtt; i++)
     {
         bool is_empty_bucket = set->buckets[i].hash == 0;
         if (is_empty_bucket)
@@ -111,9 +138,8 @@ void hashstrset_add(HashStrSet *set, char *value)
 bool hashstrset_remove(HashStrSet *set, char *value)
 {
     unsigned long hashed = hash_str_djb2(value);
-    unsigned long initial_index_attempt = hashed % set->length;
-
-    for (size_t i = initial_index_attempt; i < set->length; i++)
+    unsigned long attempt_begin = hashed % set->buckets_qtt;
+    for (size_t i = attempt_begin; i < set->buckets_qtt; i++)
     {
         if (set->buckets[i].hash == hashed && strcmp(set->buckets[i].value, value) == 0)
         {
@@ -128,17 +154,6 @@ bool hashstrset_remove(HashStrSet *set, char *value)
 }
 
 /**
- * @brief Set cardinality.
- *
- * @param set HashStrSet instance.
- * @return size_t Number of elements in this set.
- */
-size_t hashstrset_size(HashStrSet *set)
-{
-    return set->cardinality;
-}
-
-/**
  * @brief Print useful info about the given HashStrSet.
  *
  * @param set HashStrSet instance.
@@ -146,15 +161,15 @@ size_t hashstrset_size(HashStrSet *set)
 void hashstrset_debug(HashStrSet *set)
 {
     printf("--------- HashStrSet -----------\n");
-    printf("It has %lu buckets:\n", set->length);
-    for (size_t i = 0; i < set->length; i++)
+    printf("It has %lu buckets:\n", set->buckets_qtt);
+    for (size_t i = 0; i < set->buckets_qtt; i++)
     {
         printf(set->buckets[i].value == NULL ? "." : "*");
     }
 
     printf("\n");
 
-    for (size_t i = 0; i < set->length; i++)
+    for (size_t i = 0; i < set->buckets_qtt; i++)
     {
         if (set->buckets[i].hash != 0)
         {
