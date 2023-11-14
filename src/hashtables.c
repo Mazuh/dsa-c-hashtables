@@ -40,7 +40,7 @@ struct HashStrSet
 {
     size_t cardinality;
     size_t buckets_qtt;
-    HashTableStrBucket buckets[];
+    HashTableStrBucket *buckets;
 } typedef HashStrSet;
 
 /**
@@ -62,6 +62,7 @@ HashStrSet *hashstrset_init()
     HashStrSet *set = malloc(sizeof(HashStrSet));
     set->cardinality = 0;
     set->buckets_qtt = 101; // convenient and arbitrary prime number
+    set->buckets = malloc(sizeof(HashTableStrBucket) * set->buckets_qtt);
     for (size_t i = 0; i < set->buckets_qtt; i++)
     {
         set->buckets[i].hash = 0;
@@ -77,6 +78,7 @@ HashStrSet *hashstrset_init()
  */
 void hashstrset_free(HashStrSet *set)
 {
+    free(set->buckets);
     free(set);
 }
 
@@ -103,7 +105,7 @@ void hashstrset_add(HashStrSet *set, char *value)
     if (has_to_scale)
     {
         size_t scaled_buckets_qtt = set->buckets_qtt * 2; // arbitrary scaling factor
-
+        set->buckets = realloc(set->buckets, sizeof(HashTableStrBucket) * scaled_buckets_qtt);
         for (size_t i = set->buckets_qtt; i < scaled_buckets_qtt; i++)
         {
             set->buckets[i].hash = 0;
