@@ -57,7 +57,7 @@ struct HashStrSetValuesIterator
  *
  * @return HashStrSet instance, empty.
  */
-HashStrSet *hashstrset_init()
+HashStrSet *hashstrset_init(void)
 {
     HashStrSet *set = malloc(sizeof(HashStrSet));
     set->cardinality = 0;
@@ -180,7 +180,7 @@ bool hashstrset_remove(HashStrSet *set, char *value)
  *
  * @return HashStrSetValuesIterator instance, empty, ready to seek the set elements until its end.
  */
-HashStrSetValuesIterator *hashstrset_values_iterator()
+HashStrSetValuesIterator *hashstrset_values_iterator(void)
 {
     HashStrSetValuesIterator *iterator = malloc(sizeof(HashStrSetValuesIterator));
     iterator->current_value = NULL;
@@ -234,7 +234,7 @@ bool hashstrset_values_iterator_seek(HashStrSet *set, HashStrSetValuesIterator *
 /**
  * @brief Experimental execution.
  */
-int main()
+int main(void)
 {
     // create set
     HashStrSet *weekdays_set = hashstrset_init();

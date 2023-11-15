@@ -1,5 +1,5 @@
-CC = cc
-CC_FLAGS = 
+CC = gcc
+CC_FLAGS = -Wall -pedantic -std=c18
 
 SRC_FOLDER= ./src
 SRC_MAIN = hashtables.c
@@ -15,7 +15,7 @@ default: clean run
 
 build: $(SRC)
 	mkdir -p $(BIN_FOLDER)
-	$(CC) $(SRC) `$(CC_FLAGS)` -o $(BIN)
+	$(CC) $(SRC) $(CC_FLAGS) -o $(BIN)
 
 run: build
 	$(BIN)
@@ -23,7 +23,7 @@ run: build
 clean:
 	rm -rf $(BIN_FOLDER)
 
-valgrind:
+valgrind: $(SRC)
 	mkdir -p $(BIN_FOLDER)
-	gcc $(SRC) -Wall -pedantic -g -ggdb -O0 -std=c18 -o $(DEBUG_BIN)
+	gcc $(SRC) $(CC_FLAGS) -g -ggdb -O0 -o $(DEBUG_BIN)
 	valgrind $(DEBUG_BIN)
